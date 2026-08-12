@@ -1171,7 +1171,10 @@ func CreateNewProjectForUser(s *xorm.Session, u *user.User) (err error) {
 	}
 
 	u.DefaultProjectID = p.ID
-	_, err = user.UpdateUser(s, u, false)
+	// Only touch default_project_id — a full UpdateUser would write back the
+	// in-memory status and undo the email-confirmation-required status set
+	// during registration.
+	_, err = s.ID(u.ID).Cols("default_project_id").Update(u)
 	return err
 }
 

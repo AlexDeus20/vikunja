@@ -118,6 +118,9 @@ func CreateUser(s *xorm.Session, user *User) (newUser *User, err error) {
 	}
 
 	err = notifications.Notify(user, n, s)
+	// Keep the returned user in sync with the status just persisted, otherwise
+	// callers passing it to UpdateUser would silently reactivate the account.
+	newUserOut.Status = StatusEmailConfirmationRequired
 	return newUserOut, err
 }
 
