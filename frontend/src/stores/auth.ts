@@ -238,12 +238,15 @@ export const useAuthStore = defineStore('auth', () => {
 				...credentials,
 				language,
 			})
-			return login(credentials)
+			// Awaiting here is load-bearing: a bare `return login(...)` would let a
+			// login rejection (e.g. 412 email-not-confirmed) bypass the catch below
+			// and surface as a raw axios error in the register form.
+			return await login(credentials)
 		} catch (e) {
 			if (e.response?.data?.code === 2002 && e.response?.data?.invalid_fields[0]?.startsWith('language:')) {
 				return register(credentials, 'en')
 			}
-			
+
 			if (e.response?.data?.message) {
 				throw e.response.data
 			}
